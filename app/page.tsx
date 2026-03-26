@@ -2,9 +2,10 @@
 import { useState, useEffect, useCallback } from "react";
 
 const PASS = process.env.NEXT_PUBLIC_COCKPIT_PASSWORD ?? "";
+const GMB = "#2D4C47"; // Grand Manan Black
 
 const $n = (n: number) => `$${(n ?? 0).toFixed(2)}`;
-const num = (n: number) => (n ?? 0).toLocaleString('en-US');
+const num = (n: number) => (n ?? 0).toLocaleString("en-US");
 const ago = (iso: string) => {
   const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
   if (m < 1) return "just now"; if (m < 60) return `${m}m ago`;
@@ -12,20 +13,38 @@ const ago = (iso: string) => {
   return `${Math.floor(h / 24)}d ago`;
 };
 
-function Card({ title, value, sub, color }: { title: string; value: React.ReactNode; sub?: string; color?: string }) {
+const s = {
+  bg: "#F7F6F3",
+  surface: "#FFFFFF",
+  border: "#E8E6E1",
+  borderLight: "#F0EEE9",
+  text: "#1C1C1C",
+  textMid: "#555",
+  textDim: "#888",
+  textFaint: "#BBB",
+  accent: GMB,
+  accentBg: "#EBF0EF",
+  danger: "#D94F3D",
+  dangerBg: "#FEF2F0",
+  warn: "#B45309",
+  warnBg: "#FFFBEB",
+};
+
+function Card({ label, value, sub, accent }: { label: string; value: React.ReactNode; sub?: string; accent?: string }) {
   return (
-    <div style={{ background: "#ffffff", border: `1px solid ${color ? color + "44" : "#2a2a2a"}`, borderRadius: 10, padding: "14px 16px" }}>
-      <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" as const, color: "#777", marginBottom: 8 }}>{title}</div>
-      <div style={{ fontSize: "1.4rem", fontWeight: 800, color: color ?? "#e5e5e5", lineHeight: 1 }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: "#777", marginTop: 5 }}>{sub}</div>}
+    <div style={{ background: s.surface, border: `1px solid ${s.border}`, borderRadius: 10, padding: "16px 18px" }}>
+      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase" as const, color: s.textFaint, marginBottom: 8 }}>{label}</div>
+      <div style={{ fontSize: "1.5rem", fontWeight: 700, color: accent ?? s.text, lineHeight: 1.1 }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: s.textDim, marginTop: 5, lineHeight: 1.4 }}>{sub}</div>}
     </div>
   );
 }
 
-function Sec({ title, children }: { title: string; children: React.ReactNode }) {
+function Sec({ title, children, noBorder }: { title: string; children: React.ReactNode; noBorder?: boolean }) {
   return (
-    <div style={{ marginBottom: 28 }}>
-      <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" as const, color: "#888", marginBottom: 12, paddingBottom: 6, borderBottom: "1px solid #f0f0ec" }}>{title}</div>
+    <div style={{ marginBottom: 32 }}>
+      {!noBorder && <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".09em", textTransform: "uppercase" as const, color: s.textFaint, marginBottom: 14 }}>{title}</div>}
+      {noBorder && <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".09em", textTransform: "uppercase" as const, color: s.textFaint, marginBottom: 14 }}>{title}</div>}
       {children}
     </div>
   );
@@ -37,65 +56,52 @@ export default function Cockpit() {
   const [pwErr, setPwErr] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [health, setHealth] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [hLoading, setHLoading] = useState(false);
   const [limits, setLimits] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [hChecking, setHChecking] = useState(false);
   const [lastRef, setLastRef] = useState(new Date());
 
-  const fetchStats = useCallback(async () => {
+  const fetchAll = useCallback(async () => {
     const base = process.env.NEXT_PUBLIC_UNBUILT_API ?? "https://www.unbuilt.me";
     const key  = process.env.NEXT_PUBLIC_COCKPIT_API_KEY ?? "";
-    const [r, l] = await Promise.all([
-      fetch(`${base}/api/cockpit/stats`, { headers: { "x-cockpit-key": key } }).then(r => r.json()).catch(() => null),
-      fetch(`${base}/api/cockpit/limits`, { headers: { "x-cockpit-key": key } }).then(r => r.json()).catch(() => null),
+    const hdrs = { "x-cockpit-key": key };
+    const [s, l] = await Promise.all([
+      fetch(`${base}/api/cockpit/stats`,  { headers: hdrs }).then(r => r.json()).catch(() => null),
+      fetch(`${base}/api/cockpit/limits`, { headers: hdrs }).then(r => r.json()).catch(() => null),
     ]);
-    if (r) { setStats(r); setLastRef(new Date()); }
+    if (s) { setStats(s); setLastRef(new Date()); }
     if (l) setLimits(l);
   }, []);
 
   const runHealth = useCallback(async () => {
-    setHLoading(true);
+    setHChecking(true);
     const base = process.env.NEXT_PUBLIC_UNBUILT_API ?? "https://www.unbuilt.me";
     const key  = process.env.NEXT_PUBLIC_COCKPIT_API_KEY ?? "";
-    const r = await fetch(`${base}/api/cockpit/health`, {
-      headers: { "x-cockpit-key": key }
-    }).then(r => r.json()).catch(() => null);
-    if (r) setHealth(r);
-    setHLoading(false);
+    const h = await fetch(`${base}/api/cockpit/health`, { headers: { "x-cockpit-key": key } }).then(r => r.json()).catch(() => null);
+    if (h) setHealth(h);
+    setHChecking(false);
   }, []);
 
   useEffect(() => {
     if (!auth) return;
-    setLoading(true);
-    Promise.all([fetchStats(), runHealth()]).finally(() => setLoading(false));
-    const si = setInterval(fetchStats, 60000);
+    Promise.all([fetchAll(), runHealth()]).finally(() => setLoading(false));
+    const si = setInterval(fetchAll, 60000);
     return () => clearInterval(si);
-  }, [auth, fetchStats, runHealth]);
+  }, [auth, fetchAll, runHealth]);
 
-  const login = () => {
-    if (pw === PASS) { setAuth(true); setPwErr(false); }
-    else { setPwErr(true); }
-  };
+  const login = () => { if (pw === PASS) { setAuth(true); setPwErr(false); } else setPwErr(true); };
 
-  // Login screen
   if (!auth) return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ width: 320, background: "#ffffff", border: "1px solid #e0e0dc", borderRadius: 14, padding: 32 }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" as const, color: "#888", marginBottom: 6 }}>Unbuilt</div>
-        <div style={{ fontSize: "1.25rem", fontWeight: 800, marginBottom: 24, color: "#1a1a1a" }}>Cockpit</div>
-        <input
-          type="password"
-          value={pw}
-          onChange={e => setPw(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && login()}
-          placeholder="Password"
-          autoFocus
-          style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: `1px solid ${pwErr ? "#ef4444" : "#d0d0cc"}`, background: "#0a0a0a", color: "#1a1a1a", fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const, marginBottom: 12 }}
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: s.bg }}>
+      <div style={{ width: 320, background: s.surface, border: `1px solid ${s.border}`, borderRadius: 14, padding: "32px 28px", boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }}>
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase" as const, color: s.textFaint, marginBottom: 4 }}>Unbuilt</div>
+        <div style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: 24, color: s.text }}>Cockpit</div>
+        <input type="password" value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => e.key === "Enter" && login()}
+          placeholder="Password" autoFocus
+          style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: `1.5px solid ${pwErr ? s.danger : s.border}`, background: s.bg, color: s.text, fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const, marginBottom: 10 }}
         />
-        <button onClick={login} style={{ width: "100%", padding: "10px 0", borderRadius: 8, background: "#2D4C47", border: "none", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-          Enter
-        </button>
-        {pwErr && <div style={{ color: "#ef4444", fontSize: 12, marginTop: 8, textAlign: "center" as const }}>Wrong password</div>}
+        <button onClick={login} style={{ width: "100%", padding: "10px 0", borderRadius: 8, background: s.accent, border: "none", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Enter</button>
+        {pwErr && <div style={{ color: s.danger, fontSize: 12, marginTop: 8, textAlign: "center" as const }}>Wrong password</div>}
       </div>
     </div>
   );
@@ -104,79 +110,85 @@ export default function Cockpit() {
   const allOk   = health?.checks?.every((c: any) => c.ok);
   const pulseOk = stats?.pulse?.ageMinutes != null && stats.pulse.ageMinutes < 180;
   const dailyKeys = stats ? Object.keys(stats.daily ?? {}).sort().slice(-14) : [];
-  const maxVal = stats && dailyKeys.length ? Math.max(1, ...dailyKeys.map(k => (stats.daily[k]?.dig ?? 0) + (stats.daily[k]?.stack ?? 0))) : 1;
+  const maxVal = dailyKeys.length ? Math.max(1, ...dailyKeys.map(k => (stats.daily[k]?.dig ?? 0) + (stats.daily[k]?.stack ?? 0))) : 1;
 
   return (
-    <div style={{ padding: "24px 32px 80px", maxWidth: 1020, margin: "0 auto" }}>
+    <div style={{ padding: "28px 36px 80px", maxWidth: 1020, margin: "0 auto" }}>
 
       {/* HEADER */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32, paddingBottom: 20, borderBottom: `1px solid ${s.border}` }}>
         <div>
-          <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" as const, color: "#888", marginBottom: 4 }}>Unbuilt</div>
-          <h1 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 800, color: "#1a1a1a" }}>Cockpit</h1>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase" as const, color: s.textFaint, marginBottom: 3 }}>Unbuilt</div>
+          <h1 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: s.text }}>Cockpit</h1>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 11, color: "#888" }}>{lastRef.toLocaleTimeString()}</span>
-          <button onClick={fetchStats} style={{ padding: "6px 14px", borderRadius: 7, border: "1px solid #e0e0dc", background: "#ffffff", color: "#777", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>↻</button>
-          <button onClick={runHealth} disabled={hLoading} style={{ padding: "6px 16px", borderRadius: 7, border: "none", background: allOk === false ? "#ef4444" : allOk === true ? "#16a34a" : "#1e1e1e", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", opacity: hLoading ? 0.6 : 1 }}>
-            {hLoading ? "Checking..." : allOk === false ? `⚠ ${failing.length} DOWN` : allOk === true ? "✓ All OK" : "Check health"}
+          <span style={{ fontSize: 11, color: s.textDim }}>{lastRef.toLocaleTimeString()}</span>
+          <button onClick={fetchAll} style={{ padding: "6px 12px", borderRadius: 7, border: `1px solid ${s.border}`, background: s.surface, color: s.textMid, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>↻</button>
+          <button onClick={runHealth} disabled={hChecking}
+            style={{ padding: "6px 16px", borderRadius: 7, border: "none",
+              background: allOk === false ? s.danger : allOk === true ? s.accent : s.border,
+              color: allOk !== undefined ? "#fff" : s.textMid,
+              fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", opacity: hChecking ? 0.7 : 1 }}>
+            {hChecking ? "Checking…" : allOk === false ? `⚠ ${failing.length} down` : allOk === true ? "✓ All systems go" : "Check health"}
           </button>
         </div>
       </div>
 
-      {loading ? <div style={{ color: "#888", fontSize: 13 }}>Loading...</div> : <>
+      {loading ? <div style={{ color: s.textDim, fontSize: 13 }}>Loading…</div> : <>
 
       {/* HEALTH */}
-      <Sec title="🛡 Site health">
+      <Sec title="Site health">
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
           {(health?.checks ?? []).map((c: any) => (
-            <div key={c.name} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 6, border: `1px solid ${c.ok ? "#166534" : "#7f1d1d"}`, background: c.ok ? "#052e16" : "#450a0a" }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.ok ? "#2D4C47" : "#ef4444", display: "inline-block" }} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: c.ok ? "#4ade80" : "#f87171" }}>{c.name}</span>
-              <span style={{ fontSize: 11, color: c.ok ? "#166534" : "#7f1d1d" }}>{c.latency}ms</span>
+            <div key={c.name} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 11px", borderRadius: 6,
+              background: c.ok ? s.accentBg : s.dangerBg,
+              border: `1px solid ${c.ok ? "#C5DAD7" : "#F5C6C0"}` }}>
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: c.ok ? s.accent : s.danger, display: "inline-block", flexShrink: 0 }} />
+              <span style={{ fontSize: 12, fontWeight: 500, color: c.ok ? s.accent : s.danger }}>{c.name}</span>
+              <span style={{ fontSize: 11, color: c.ok ? "#6A9E98" : "#E07068" }}>{c.latency}ms</span>
             </div>
           ))}
         </div>
         {failing.map((c: any) => (
-          <div key={c.name} style={{ marginTop: 8, padding: "10px 14px", borderRadius: 8, background: "#fef2f2", border: "1px solid #fecaca" }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#dc2626" }}>🚨 {c.name} — HTTP {c.status || "TIMEOUT"}</div>
-            {c.error && <div style={{ fontSize: 11, color: "#ef4444", fontFamily: "monospace", marginTop: 3 }}>{c.error}</div>}
+          <div key={c.name} style={{ marginTop: 10, padding: "10px 14px", borderRadius: 8, background: s.dangerBg, border: `1px solid #F5C6C0` }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: s.danger }}>⚠ {c.name} — HTTP {c.status || "timeout"}</div>
+            {c.error && <div style={{ fontSize: 11, color: s.danger, fontFamily: "monospace", marginTop: 3, opacity: 0.8 }}>{c.error}</div>}
           </div>
         ))}
       </Sec>
 
       {/* USAGE */}
-      <Sec title="📊 Usage">
+      <Sec title="Usage">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
-          <Card title="Users today"   value={stats?.users?.today ?? 0}          sub={`${num(stats?.users?.week ?? 0)} week · ${num(stats?.users?.total ?? 0)} total`} />
-          <Card title="Reports today" value={stats?.reports?.today ?? 0}        sub={`${num(stats?.reports?.week ?? 0)} week · ${num(stats?.reports?.total ?? 0)} total`} />
-          <Card title="Dig today"     value={stats?.reports?.dig?.today ?? 0}   sub={`${num(stats?.reports?.dig?.total ?? 0)} total`} color="#2D4C47" />
-          <Card title="Stack today"   value={stats?.reports?.stack?.today ?? 0} sub={`${num(stats?.reports?.stack?.total ?? 0)} total`} color="#38bdf8" />
+          <Card label="Users today"   value={stats?.users?.today ?? 0}          sub={`${num(stats?.users?.week ?? 0)} this week · ${num(stats?.users?.total ?? 0)} total`} />
+          <Card label="Reports today" value={stats?.reports?.today ?? 0}        sub={`${num(stats?.reports?.week ?? 0)} this week · ${num(stats?.reports?.total ?? 0)} total`} />
+          <Card label="Dig today"     value={stats?.reports?.dig?.today ?? 0}   sub={`${num(stats?.reports?.dig?.total ?? 0)} total`} accent={s.accent} />
+          <Card label="Stack today"   value={stats?.reports?.stack?.today ?? 0} sub={`${num(stats?.reports?.stack?.total ?? 0)} total`} accent="#3B7DBF" />
         </div>
       </Sec>
 
       {/* REVENUE */}
-      <Sec title="💰 Revenue">
+      <Sec title="Revenue">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 10 }}>
-          <Card title="Today"        value={$n(stats?.revenue?.today ?? 0)}   sub={`${$n(stats?.revenue?.week ?? 0)} this week`} color="#2D4C47" />
-          <Card title="All time"     value={$n(stats?.revenue?.total ?? 0)}   color="#2D4C47" />
-          <Card title="Orders today" value={stats?.orders?.today ?? 0}        sub={`${num(stats?.orders?.total ?? 0)} total`} />
-          <Card title="Credits sold" value={num(stats?.orders?.credits ?? 0)} sub="all time" />
+          <Card label="Today"        value={$n(stats?.revenue?.today ?? 0)}   sub={`${$n(stats?.revenue?.week ?? 0)} this week`} accent={s.accent} />
+          <Card label="All time"     value={$n(stats?.revenue?.total ?? 0)}   accent={s.accent} />
+          <Card label="Orders today" value={stats?.orders?.today ?? 0}        sub={`${num(stats?.orders?.total ?? 0)} total`} />
+          <Card label="Credits sold" value={num(stats?.orders?.credits ?? 0)} sub="all time" />
         </div>
         {(stats?.orders?.recent ?? []).length > 0 && (
-          <div style={{ background: "#ffffff", border: "1px solid #e0e0dc", borderRadius: 8, overflow: "hidden" }}>
+          <div style={{ background: s.surface, border: `1px solid ${s.border}`, borderRadius: 10, overflow: "hidden" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-              <thead><tr style={{ borderBottom: "1px solid #f0f0ec" }}>
-                {["When", "Package", "Credits", "Amount"].map(h => (
-                  <th key={h} style={{ padding: "8px 14px", textAlign: "left" as const, fontSize: 9, fontWeight: 700, color: "#888", letterSpacing: ".08em", textTransform: "uppercase" as const }}>{h}</th>
+              <thead><tr style={{ borderBottom: `1px solid ${s.borderLight}`, background: s.bg }}>
+                {["When","Package","Credits","Amount"].map(h => (
+                  <th key={h} style={{ padding: "8px 16px", textAlign: "left" as const, fontSize: 10, fontWeight: 700, color: s.textFaint, letterSpacing: ".07em", textTransform: "uppercase" as const }}>{h}</th>
                 ))}
               </tr></thead>
               <tbody>{stats.orders.recent.map((o: any, i: number) => (
-                <tr key={i} style={{ borderBottom: "1px solid #f0f0ec" }}>
-                  <td style={{ padding: "8px 14px", color: "#777" }}>{ago(o.created_at)}</td>
-                  <td style={{ padding: "8px 14px", fontWeight: 600, color: "#555" }}>{o.package_slug}</td>
-                  <td style={{ padding: "8px 14px", color: "#888" }}>{o.credits_added}</td>
-                  <td style={{ padding: "8px 14px", color: "#2D4C47", fontWeight: 700 }}>{$n(o.amount_usd ?? 0)}</td>
+                <tr key={i} style={{ borderBottom: `1px solid ${s.borderLight}` }}>
+                  <td style={{ padding: "9px 16px", color: s.textDim }}>{ago(o.created_at)}</td>
+                  <td style={{ padding: "9px 16px", fontWeight: 600, color: s.text }}>{o.package_slug}</td>
+                  <td style={{ padding: "9px 16px", color: s.textMid }}>{o.credits_added}</td>
+                  <td style={{ padding: "9px 16px", color: s.accent, fontWeight: 700 }}>{$n(o.amount_usd ?? 0)}</td>
                 </tr>
               ))}</tbody>
             </table>
@@ -185,59 +197,63 @@ export default function Cockpit() {
       </Sec>
 
       {/* API COSTS */}
-      <Sec title="💸 API costs (Anthropic)">
+      <Sec title="API costs — Anthropic">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <div style={{ background: "#ffffff", border: "1px solid #e0e0dc", borderRadius: 10, padding: "14px 16px" }}>
-            <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" as const, color: "#888", marginBottom: 8 }}>March 2026 baseline</div>
-            <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "#1a1a1a" }}>$40.04</div>
-            <div style={{ fontSize: 11, color: "#777", marginTop: 6, lineHeight: 1.7 }}>
-              Sonnet 4.6: $16.07/mo · Opus: $11.33/mo · Haiku: $8.45/mo<br />
+          <div style={{ background: s.surface, border: `1px solid ${s.border}`, borderRadius: 10, padding: "16px 18px" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase" as const, color: s.textFaint, marginBottom: 8 }}>March 2026 baseline</div>
+            <div style={{ fontSize: "1.5rem", fontWeight: 700, color: s.text, marginBottom: 8 }}>$40.04</div>
+            <div style={{ fontSize: 11, color: s.textDim, lineHeight: 1.7 }}>
+              Sonnet 4.6: $16.07/mo · Opus: $11.33/mo · Haiku: $8.45/mo<br/>
               Dig/Stack: ~$0.45–0.75/query · Pulse: ~$3.21/day
             </div>
           </div>
-          <div style={{ background: "#ffffff", border: "1px solid #e0e0dc", borderRadius: 10, padding: "14px 16px", display: "flex", flexDirection: "column" as const, gap: 10 }}>
-            <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" as const, color: "#888" }}>Live billing</div>
-            <div style={{ fontSize: 12, color: "#777", lineHeight: 1.6 }}>Real-time usage is in Anthropic Console.</div>
-            <a href="https://console.anthropic.com/workspaces/default/cost" target="_blank" rel="noopener noreferrer"
-              style={{ padding: "8px 14px", borderRadius: 7, background: "#2D4C47", color: "#fff", textDecoration: "none", fontSize: 12, fontWeight: 700, display: "inline-block", width: "fit-content" }}>
-              Open Console ↗
+          <div style={{ background: s.surface, border: `1px solid ${s.border}`, borderRadius: 10, padding: "16px 18px", display: "flex", flexDirection: "column" as const, gap: 8 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase" as const, color: s.textFaint }}>Live billing</div>
+            <div style={{ fontSize: 12, color: s.textMid, lineHeight: 1.6 }}>Real-time token usage is in Anthropic Console.</div>
+            <a href="https://console.anthropic.com/settings/billing" target="_blank" rel="noopener noreferrer"
+              style={{ padding: "8px 14px", borderRadius: 8, background: s.accent, color: "#fff", textDecoration: "none", fontSize: 12, fontWeight: 600, display: "inline-block", width: "fit-content" }}>
+              Open billing ↗
             </a>
           </div>
         </div>
       </Sec>
 
       {/* PULSE */}
-      <Sec title="📡 Pulse">
+      <Sec title="Pulse">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
-          <Card title="Last update" value={stats?.pulse?.generatedAt ? ago(stats.pulse.generatedAt) : "Never"} sub={stats?.pulse?.generatedAt ? new Date(stats.pulse.generatedAt).toLocaleString() : "—"} color={pulseOk ? undefined : "#ef4444"} />
-          <Card title="Signals"     value={num(stats?.pulse?.signals ?? 0)} sub="in feed" />
-          <Card title="Feed age"    value={stats?.pulse?.ageMinutes !== null ? `${stats.pulse.ageMinutes}m` : "?"} sub={pulseOk ? "✓ Fresh" : "⚠ Stale"} color={pulseOk ? "#2D4C47" : "#ef4444"} />
+          <Card label="Last update" value={stats?.pulse?.generatedAt ? ago(stats.pulse.generatedAt) : "Never"}
+            sub={stats?.pulse?.generatedAt ? new Date(stats.pulse.generatedAt).toLocaleString() : "—"}
+            accent={pulseOk ? s.text : s.danger} />
+          <Card label="Signals in feed" value={num(stats?.pulse?.signals ?? 0)} />
+          <Card label="Feed age" value={stats?.pulse?.ageMinutes != null ? `${stats.pulse.ageMinutes}m` : "?"}
+            sub={pulseOk ? "Fresh" : "⚠ Stale — check cron"} accent={pulseOk ? s.text : s.danger} />
         </div>
       </Sec>
 
       {/* CHART */}
-      <Sec title="📈 Daily reports (14 days)">
-        <div style={{ background: "#ffffff", border: "1px solid #e0e0dc", borderRadius: 10, padding: "16px 16px 12px" }}>
-          {dailyKeys.length === 0 ? <div style={{ fontSize: 12, color: "#888" }}>No data yet</div> : (
+      <Sec title="Daily reports — last 14 days">
+        <div style={{ background: s.surface, border: `1px solid ${s.border}`, borderRadius: 10, padding: "20px 18px 14px" }}>
+          {dailyKeys.length === 0 ? <div style={{ fontSize: 12, color: s.textDim }}>No data yet</div> : (
             <>
               <div style={{ display: "flex", alignItems: "flex-end", gap: 5, height: 72 }}>
                 {dailyKeys.map(k => {
-                  const d = stats.daily[k]; const total = (d.dig ?? 0) + (d.stack ?? 0);
-                  const h = Math.max(3, Math.round((total / maxVal) * 64));
+                  const d = stats.daily[k]; const total = (d?.dig ?? 0) + (d?.stack ?? 0);
+                  const h = total > 0 ? Math.max(5, Math.round((total / maxVal) * 64)) : 3;
                   return (
-                    <div key={k} title={`${k}: ${d.dig} Dig, ${d.stack} Stack`} style={{ flex: 1, display: "flex", flexDirection: "column" as const, alignItems: "center" }}>
+                    <div key={k} title={`${k}: ${d?.dig ?? 0} Dig, ${d?.stack ?? 0} Stack`}
+                      style={{ flex: 1, display: "flex", flexDirection: "column" as const, alignItems: "center" }}>
                       <div style={{ width: "100%", display: "flex", flexDirection: "column" as const, justifyContent: "flex-end", height: 64 }}>
-                        <div style={{ height: h, borderRadius: 3, background: total > 0 ? "#2D4C47" : "#1e1e1e" }} />
+                        <div style={{ height: h, borderRadius: 3, background: total > 0 ? s.accent : s.borderLight }} />
                       </div>
-                      <div style={{ fontSize: 9, color: "#888", marginTop: 4, transform: "rotate(-45deg)", whiteSpace: "nowrap" as const }}>{k.slice(5)}</div>
+                      <div style={{ fontSize: 9, color: s.textFaint, marginTop: 5, transform: "rotate(-45deg)", whiteSpace: "nowrap" as const }}>{k.slice(5)}</div>
                     </div>
                   );
                 })}
               </div>
-              <div style={{ marginTop: 14, fontSize: 11, color: "#777", display: "flex", gap: 20 }}>
-                <span>Dig: <b style={{ color: "#888" }}>{num(stats?.reports?.dig?.total ?? 0)}</b></span>
-                <span>Stack: <b style={{ color: "#888" }}>{num(stats?.reports?.stack?.total ?? 0)}</b></span>
-                <span>This week: <b style={{ color: "#888" }}>{num(stats?.reports?.week ?? 0)}</b></span>
+              <div style={{ marginTop: 16, fontSize: 11, color: s.textDim, display: "flex", gap: 20 }}>
+                <span>Dig: <b style={{ color: s.text }}>{num(stats?.reports?.dig?.total ?? 0)}</b></span>
+                <span>Stack: <b style={{ color: s.text }}>{num(stats?.reports?.stack?.total ?? 0)}</b></span>
+                <span>This week: <b style={{ color: s.text }}>{num(stats?.reports?.week ?? 0)}</b></span>
               </div>
             </>
           )}
@@ -245,81 +261,79 @@ export default function Cockpit() {
       </Sec>
 
       {/* API LIMITS */}
-      <Sec title="⚡ API limits & quotas">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10, marginBottom: 10 }}>
+      <Sec title="API limits & quotas">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
           {(limits?.liveApis ?? []).map((api: any) => {
             const pct = api.limit && api.remaining != null ? Math.round((api.remaining / api.limit) * 100) : null;
-            const color = pct === null ? "#555" : pct > 50 ? "#2D4C47" : pct > 20 ? "#f59e0b" : "#ef4444";
+            const barColor = pct === null ? s.accent : pct > 50 ? s.accent : pct > 20 ? s.warn : s.danger;
             return (
-              <a key={api.name} href={api.dashboardUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", background: "#ffffff", border: `1px solid ${color}33`, borderRadius: 10, padding: "14px 16px", display: "block" }}>
+              <a key={api.name} href={api.dashboardUrl} target="_blank" rel="noopener noreferrer"
+                style={{ textDecoration: "none", background: s.surface, border: `1px solid ${s.border}`, borderRadius: 10, padding: "14px 16px", display: "block" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                   <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a" }}>{api.icon} {api.name}</div>
-                    <div style={{ fontSize: 10, color: "#777", marginTop: 2 }}>{api.subtitle}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: s.text }}>{api.icon} {api.name}</div>
+                    <div style={{ fontSize: 11, color: s.textDim, marginTop: 1 }}>{api.subtitle}</div>
                   </div>
-                  {pct !== null && <div style={{ fontSize: "1.1rem", fontWeight: 800, color }}>{pct}%</div>}
-                  {api.error && <div style={{ fontSize: 10, color: "#ef4444" }}>fetch error</div>}
+                  {pct !== null && <div style={{ fontSize: "1rem", fontWeight: 700, color: barColor }}>{pct}%</div>}
+                  {api.error && <span style={{ fontSize: 10, color: s.textDim, background: s.bg, padding: "2px 6px", borderRadius: 4 }}>API unavailable</span>}
                 </div>
                 {api.remaining != null ? (
                   <>
-                    <div style={{ height: 4, background: "#1e1e1e", borderRadius: 2, marginBottom: 6 }}>
-                      <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 2, transition: "width 0.5s" }} />
+                    <div style={{ height: 3, background: s.borderLight, borderRadius: 2, marginBottom: 6 }}>
+                      <div style={{ height: "100%", width: `${Math.min(pct ?? 100, 100)}%`, background: barColor, borderRadius: 2 }} />
                     </div>
-                    <div style={{ fontSize: 11, color: "#777" }}>
-                      <span style={{ color: "#888", fontWeight: 700 }}>{(api.remaining ?? 0).toLocaleString('en-US')}</span> remaining
-                      {api.limit ? <span> / {api.limit.toLocaleString('en-US')}</span> : null}
-                      {api.used != null ? <span style={{ marginLeft: 8, color: "#777" }}>{api.used.toLocaleString('en-US')} used</span> : null}
+                    <div style={{ fontSize: 11, color: s.textDim }}>
+                      <b style={{ color: s.text }}>{(api.remaining ?? 0).toLocaleString("en-US")}</b> remaining
+                      {api.limit ? <span style={{ color: s.textFaint }}> / {api.limit.toLocaleString("en-US")}</span> : null}
+                      {api.note && <span style={{ marginLeft: 8, color: s.textFaint }}>{api.note}</span>}
                     </div>
                   </>
                 ) : (
-                  <div style={{ fontSize: 11, color: "#777", display: "flex", alignItems: "center", gap: 8 }}>
-                    {api.error ? "Could not fetch automatically —" : "Loading..."}
-                    {api.error && (
-                      <a href="https://app.scrapecreators.com" target="_blank" rel="noopener noreferrer"
-                        style={{ color: "#2D4C47", fontSize: 11, fontWeight: 600, textDecoration: "none" }}>
-                        Open dashboard ↗
-                      </a>
-                    )}
+                  <div style={{ fontSize: 11, color: s.textDim, display: "flex", alignItems: "center", gap: 8 }}>
+                    {api.error ? (
+                      <><span>API unavailable —</span><a href="https://app.scrapecreators.com" target="_blank" rel="noopener noreferrer" style={{ color: s.accent, fontWeight: 600, textDecoration: "none" }}>Open dashboard ↗</a></>
+                    ) : "Loading…"}
                   </div>
                 )}
-                <div style={{ fontSize: 10, color: "#888", marginTop: 6 }}>{api.resetInfo}</div>
+                <div style={{ fontSize: 10, color: s.textFaint, marginTop: 6 }}>{api.resetInfo}</div>
               </a>
             );
           })}
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
           {(limits?.manualApis ?? []).map((api: any) => (
-            <a key={api.name} href={api.dashboardUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", background: "#ffffff", border: "1px solid #e0e0dc", borderRadius: 10, padding: "12px 14px", display: "block" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a", marginBottom: 4 }}>{api.icon} {api.name}</div>
-              <div style={{ fontSize: 10, color: "#777", marginBottom: 6 }}>{api.subtitle}</div>
-              {api.limit && <div style={{ fontSize: 13, fontWeight: 700, color: "#888" }}>{api.limit.toLocaleString('en-US')} <span style={{ fontSize: 10, fontWeight: 400, color: "#777" }}>{api.note}</span></div>}
-              {!api.limit && <div style={{ fontSize: 11, color: "#777" }}>{api.note}</div>}
-              <div style={{ fontSize: 10, color: "#888", marginTop: 4 }}>{api.resetInfo} · View dashboard ↗</div>
+            <a key={api.name} href={api.dashboardUrl} target="_blank" rel="noopener noreferrer"
+              style={{ textDecoration: "none", background: s.surface, border: `1px solid ${s.border}`, borderRadius: 10, padding: "12px 14px", display: "block" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: s.text, marginBottom: 3 }}>{api.icon} {api.name}</div>
+              <div style={{ fontSize: 11, color: s.textDim, marginBottom: 6 }}>{api.subtitle}</div>
+              {api.limit && <div style={{ fontSize: "1rem", fontWeight: 700, color: s.text }}>{api.limit.toLocaleString("en-US")} <span style={{ fontSize: 10, fontWeight: 400, color: s.textDim }}>{api.note}</span></div>}
+              {!api.limit && <div style={{ fontSize: 11, color: s.textMid }}>{api.note}</div>}
+              <div style={{ fontSize: 10, color: s.textFaint, marginTop: 5 }}>{api.resetInfo} · View dashboard ↗</div>
             </a>
           ))}
         </div>
       </Sec>
 
       {/* QUICK LINKS */}
-      <Sec title="🔗 Quick links">
+      <Sec title="Quick links">
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
           {[
             ["Anthropic Console", "https://console.anthropic.com/workspaces/default/cost"],
-            ["Vercel", "https://vercel.com/sametduman00s-projects/unbuilt"],
+            ["Vercel", "https://vercel.com/sam-3735s-projects/unbuilt"],
             ["Supabase", "https://supabase.com/dashboard/project/jlqawgrtnbizwqigbyho"],
             ["Clerk", "https://dashboard.clerk.com"],
             ["Google Analytics", "https://analytics.google.com"],
             ["Paddle", "https://vendors.paddle.com"],
           ].map(([l, u]) => (
             <a key={l} href={u} target="_blank" rel="noopener noreferrer"
-              style={{ padding: "7px 12px", borderRadius: 7, border: "1px solid #e0e0dc", background: "#ffffff", color: "#777", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>
+              style={{ padding: "7px 13px", borderRadius: 7, border: `1px solid ${s.border}`, background: s.surface, color: s.textMid, textDecoration: "none", fontSize: 12, fontWeight: 500 }}>
               {l} ↗
             </a>
           ))}
         </div>
       </Sec>
 
-      <div style={{ fontSize: 10, color: "#555", textAlign: "center" as const, marginTop: 16 }}>
+      <div style={{ fontSize: 11, color: s.textFaint, textAlign: "center" as const, marginTop: 8 }}>
         Auto-refreshes every 60s · {lastRef.toLocaleString()}
       </div>
 
