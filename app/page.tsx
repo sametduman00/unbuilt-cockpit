@@ -39,15 +39,18 @@ export default function Cockpit() {
   const [health, setHealth] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [hLoading, setHLoading] = useState(false);
+  const [limits, setLimits] = useState<any>(null);
   const [lastRef, setLastRef] = useState(new Date());
 
   const fetchStats = useCallback(async () => {
     const base = process.env.NEXT_PUBLIC_UNBUILT_API ?? "https://www.unbuilt.me";
     const key  = process.env.NEXT_PUBLIC_COCKPIT_API_KEY ?? "";
-    const r = await fetch(`${base}/api/cockpit/stats`, {
-      headers: { "x-cockpit-key": key }
-    }).then(r => r.json()).catch(() => null);
+    const [r, l] = await Promise.all([
+      fetch(`${base}/api/cockpit/stats`, { headers: { "x-cockpit-key": key } }).then(r => r.json()).catch(() => null),
+      fetch(`${base}/api/cockpit/limits`, { headers: { "x-cockpit-key": key } }).then(r => r.json()).catch(() => null),
+    ]);
     if (r) { setStats(r); setLastRef(new Date()); }
+    if (l) setLimits(l);
   }, []);
 
   const runHealth = useCallback(async () => {
@@ -238,6 +241,54 @@ export default function Cockpit() {
               </div>
             </>
           )}
+        </div>
+      </Sec>
+
+      {/* API LIMITS */}
+      <Sec title="⚡ API limits & quotas">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10, marginBottom: 10 }}>
+          {(limits?.liveApis ?? []).map((api: any) => {
+            const pct = api.limit && api.remaining != null ? Math.round((api.remaining / api.limit) * 100) : null;
+            const color = pct === null ? "#555" : pct > 50 ? "#22c55e" : pct > 20 ? "#f59e0b" : "#ef4444";
+            return (
+              <a key={api.name} href={api.dashboardUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", background: "#111", border: `1px solid ${color}33`, borderRadius: 10, padding: "14px 16px", display: "block" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#ddd" }}>{api.icon} {api.name}</div>
+                    <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>{api.subtitle}</div>
+                  </div>
+                  {pct !== null && <div style={{ fontSize: "1.1rem", fontWeight: 800, color }}>{pct}%</div>}
+                  {api.error && <div style={{ fontSize: 10, color: "#ef4444" }}>fetch error</div>}
+                </div>
+                {api.remaining != null ? (
+                  <>
+                    <div style={{ height: 4, background: "#1e1e1e", borderRadius: 2, marginBottom: 6 }}>
+                      <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 2, transition: "width 0.5s" }} />
+                    </div>
+                    <div style={{ fontSize: 11, color: "#666" }}>
+                      <span style={{ color: "#aaa", fontWeight: 700 }}>{(api.remaining ?? 0).toLocaleString('en-US')}</span> remaining
+                      {api.limit ? <span> / {api.limit.toLocaleString('en-US')}</span> : null}
+                      {api.used != null ? <span style={{ marginLeft: 8, color: "#555" }}>{api.used.toLocaleString('en-US')} used</span> : null}
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ fontSize: 11, color: "#555" }}>{api.error ? "Could not fetch — check dashboard ↗" : "Loading..."}</div>
+                )}
+                <div style={{ fontSize: 10, color: "#444", marginTop: 6 }}>{api.resetInfo}</div>
+              </a>
+            );
+          })}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
+          {(limits?.manualApis ?? []).map((api: any) => (
+            <a key={api.name} href={api.dashboardUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", background: "#111", border: "1px solid #1e1e1e", borderRadius: 10, padding: "12px 14px", display: "block" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#ddd", marginBottom: 4 }}>{api.icon} {api.name}</div>
+              <div style={{ fontSize: 10, color: "#555", marginBottom: 6 }}>{api.subtitle}</div>
+              {api.limit && <div style={{ fontSize: 13, fontWeight: 700, color: "#aaa" }}>{api.limit.toLocaleString('en-US')} <span style={{ fontSize: 10, fontWeight: 400, color: "#555" }}>{api.note}</span></div>}
+              {!api.limit && <div style={{ fontSize: 11, color: "#555" }}>{api.note}</div>}
+              <div style={{ fontSize: 10, color: "#444", marginTop: 4 }}>{api.resetInfo} · View dashboard ↗</div>
+            </a>
+          ))}
         </div>
       </Sec>
 
