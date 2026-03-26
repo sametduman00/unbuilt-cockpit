@@ -99,9 +99,9 @@ export default function Cockpit() {
 
   const failing = health?.checks?.filter((c: any) => !c.ok) ?? [];
   const allOk   = health?.checks?.every((c: any) => c.ok);
-  const pulseOk = stats?.pulse?.ageMinutes !== null && stats?.pulse?.ageMinutes < 180;
-  const dailyKeys = Object.keys(stats?.daily ?? {}).sort().slice(-14);
-  const maxVal = Math.max(1, ...dailyKeys.map(k => (stats.daily[k].dig ?? 0) + (stats.daily[k].stack ?? 0)));
+  const pulseOk = stats?.pulse?.ageMinutes != null && stats.pulse.ageMinutes < 180;
+  const dailyKeys = stats ? Object.keys(stats.daily ?? {}).sort().slice(-14) : [];
+  const maxVal = stats && dailyKeys.length ? Math.max(1, ...dailyKeys.map(k => (stats.daily[k]?.dig ?? 0) + (stats.daily[k]?.stack ?? 0))) : 1;
 
   return (
     <div style={{ padding: "24px 32px 80px", maxWidth: 1020, margin: "0 auto" }}>
