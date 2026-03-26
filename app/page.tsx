@@ -37,7 +37,7 @@ export default function Cockpit() {
   const [pwErr, setPwErr] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [health, setHealth] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [hLoading, setHLoading] = useState(false);
   const [lastRef, setLastRef] = useState(new Date());
 
