@@ -272,7 +272,15 @@ export default function Cockpit() {
                     </div>
                   </>
                 ) : (
-                  <div style={{ fontSize: 11, color: "#555" }}>{api.error ? "Could not fetch — check dashboard ↗" : "Loading..."}</div>
+                  <div style={{ fontSize: 11, color: "#555", display: "flex", alignItems: "center", gap: 8 }}>
+                    {api.error ? "Could not fetch automatically —" : "Loading..."}
+                    {api.error && (
+                      <a href="https://app.scrapecreators.com" target="_blank" rel="noopener noreferrer"
+                        style={{ color: "#7c6fff", fontSize: 11, fontWeight: 600, textDecoration: "none" }}>
+                        Open dashboard ↗
+                      </a>
+                    )}
+                  </div>
                 )}
                 <div style={{ fontSize: 10, color: "#444", marginTop: 6 }}>{api.resetInfo}</div>
               </a>
