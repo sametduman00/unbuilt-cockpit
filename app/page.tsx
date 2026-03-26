@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 const PASS = process.env.NEXT_PUBLIC_COCKPIT_PASSWORD ?? "";
 
 const $n = (n: number) => `$${(n ?? 0).toFixed(2)}`;
-const num = (n: number) => (n ?? 0).toLocaleString();
+const num = (n: number) => (n ?? 0).toLocaleString('en-US');
 const ago = (iso: string) => {
   const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
   if (m < 1) return "just now"; if (m < 60) return `${m}m ago`;
