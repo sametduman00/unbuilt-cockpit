@@ -137,18 +137,18 @@ export default function Cockpit() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 11, color: s.textDim }}>{lastRef.toLocaleTimeString()}</span>
-          <button onClick={fetchAll} style={{ padding: "6px 12px", borderRadius: 7, border: `1px solid ${s.border}`, background: s.surface, color: s.textMid, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>â»</button>
+          <button onClick={fetchAll} style={{ padding: "6px 12px", borderRadius: 7, border: `1px solid ${s.border}`, background: s.surface, color: s.textMid, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>↻</button>
           <button onClick={runHealth} disabled={hChecking}
             style={{ padding: "6px 16px", borderRadius: 7, border: "none",
               background: allOk === false ? s.danger : allOk === true ? s.accent : s.border,
               color: allOk !== undefined ? "#fff" : s.textMid,
               fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", opacity: hChecking ? 0.7 : 1 }}>
-            {hChecking ? "Checkingâ¦" : allOk === false ? `â  ${failing.length} down` : allOk === true ? "â All systems go" : "Check health"}
+            {hChecking ? "Checking…" : allOk === false ? `⚠ ${failing.length} down` : allOk === true ? "✓ All systems go" : "Check health"}
           </button>
         </div>
       </div>
 
-      {loading ? <div style={{ color: s.textDim, fontSize: 13 }}>Loadingâ¦</div> : <>
+      {loading ? <div style={{ color: s.textDim, fontSize: 13 }}>Loading…</div> : <>
 
       {/* HEALTH */}
       <Sec title="Site health">
@@ -165,7 +165,7 @@ export default function Cockpit() {
         </div>
         {failing.map((c: any) => (
           <div key={c.name} style={{ marginTop: 10, padding: "10px 14px", borderRadius: 8, background: s.dangerBg, border: `1px solid #F5C6C0` }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: s.danger }}>â  {c.name} â HTTP {c.status || "timeout"}</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: s.danger }}>⚠ {c.name} — HTTP {c.status || "timeout"}</div>
             {c.error && <div style={{ fontSize: 11, color: s.danger, fontFamily: "monospace", marginTop: 3, opacity: 0.8 }}>{c.error}</div>}
           </div>
         ))}
@@ -174,8 +174,8 @@ export default function Cockpit() {
       {/* USAGE */}
       <Sec title="Usage">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
-          <Card label="Users today"   value={stats?.users?.today ?? 0}          sub={`${num(stats?.users?.week ?? 0)} this week Â· ${num(stats?.users?.total ?? 0)} total`} />
-          <Card label="Reports today" value={stats?.reports?.today ?? 0}        sub={`${num(stats?.reports?.week ?? 0)} this week Â· ${num(stats?.reports?.total ?? 0)} total`} />
+          <Card label="Users today"   value={stats?.users?.today ?? 0}          sub={`${num(stats?.users?.week ?? 0)} this week · ${num(stats?.users?.total ?? 0)} total`} />
+          <Card label="Reports today" value={stats?.reports?.today ?? 0}        sub={`${num(stats?.reports?.week ?? 0)} this week · ${num(stats?.reports?.total ?? 0)} total`} />
           <Card label="Dig today"     value={stats?.reports?.dig?.today ?? 0}   sub={`${num(stats?.reports?.dig?.total ?? 0)} total`} accent={s.accent} />
           <Card label="Stack today"   value={stats?.reports?.stack?.today ?? 0} sub={`${num(stats?.reports?.stack?.total ?? 0)} total`} accent="#3B7DBF" />
         </div>
@@ -211,14 +211,14 @@ export default function Cockpit() {
       </Sec>
 
       {/* API COSTS */}
-      <Sec title="API costs â Anthropic">
+      <Sec title="API costs — Anthropic">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <div style={{ background: s.surface, border: `1px solid ${s.border}`, borderRadius: 10, padding: "16px 18px" }}>
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase" as const, color: s.textFaint, marginBottom: 8 }}>March 2026 baseline</div>
             <div style={{ fontSize: "1.5rem", fontWeight: 700, color: s.text, marginBottom: 8 }}>$40.04</div>
             <div style={{ fontSize: 11, color: s.textDim, lineHeight: 1.7 }}>
-              Sonnet 4.6: $16.07/mo Â· Opus: $11.33/mo Â· Haiku: $8.45/mo<br/>
-              Dig/Stack: ~$0.45â0.75/query Â· Pulse: ~$3.21/day
+              Sonnet 4.6: $16.07/mo · Opus: $11.33/mo · Haiku: $8.45/mo<br/>
+              Dig/Stack: ~$0.45–0.75/query · Pulse: ~$3.21/day
             </div>
           </div>
           <div style={{ background: s.surface, border: `1px solid ${s.border}`, borderRadius: 10, padding: "16px 18px", display: "flex", flexDirection: "column" as const, gap: 8 }}>
@@ -226,7 +226,7 @@ export default function Cockpit() {
             <div style={{ fontSize: 12, color: s.textMid, lineHeight: 1.6 }}>Real-time token usage is in Anthropic Console.</div>
             <a href="https://console.anthropic.com/settings/billing" target="_blank" rel="noopener noreferrer"
               style={{ padding: "8px 14px", borderRadius: 8, background: s.accent, color: "#fff", textDecoration: "none", fontSize: 12, fontWeight: 600, display: "inline-block", width: "fit-content" }}>
-              Open billing â
+              Open billing →
             </a>
           </div>
         </div>
@@ -236,16 +236,16 @@ export default function Cockpit() {
       <Sec title="Pulse">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
           <Card label="Last update" value={stats?.pulse?.generatedAt ? ago(stats.pulse.generatedAt) : "Never"}
-            sub={stats?.pulse?.generatedAt ? new Date(stats.pulse.generatedAt).toLocaleString() : "â"}
+            sub={stats?.pulse?.generatedAt ? new Date(stats.pulse.generatedAt).toLocaleString() : "—"}
             accent={pulseOk ? s.text : s.danger} />
           <Card label="Signals in feed" value={num(stats?.pulse?.signals ?? 0)} />
           <Card label="Feed age" value={stats?.pulse?.ageMinutes != null ? `${stats.pulse.ageMinutes}m` : "?"}
-            sub={pulseOk ? "Fresh" : "â  Stale â check cron"} accent={pulseOk ? s.text : s.danger} />
+            sub={pulseOk ? "Fresh" : "⚠ Stale — check cron"} accent={pulseOk ? s.text : s.danger} />
         </div>
       </Sec>
 
       {/* CHART */}
-      <Sec title="Daily reports â last 14 days">
+      <Sec title="Daily reports — last 14 days">
         <div style={{ background: s.surface, border: `1px solid ${s.border}`, borderRadius: 10, padding: "20px 18px 14px" }}>
           {dailyKeys.length === 0 ? <div style={{ fontSize: 12, color: s.textDim }}>No data yet</div> : (
             <>
@@ -305,8 +305,8 @@ export default function Cockpit() {
                 ) : (
                   <div style={{ fontSize: 11, color: s.textDim, display: "flex", alignItems: "center", gap: 8 }}>
                     {api.error ? (
-                      <><span>API unavailable â</span><a href="https://app.scrapecreators.com" target="_blank" rel="noopener noreferrer" style={{ color: s.accent, fontWeight: 600, textDecoration: "none" }}>Open dashboard â</a></>
-                    ) : "Loadingâ¦"}
+                      <><span>API unavailable —</span><a href="https://app.scrapecreators.com" target="_blank" rel="noopener noreferrer" style={{ color: s.accent, fontWeight: 600, textDecoration: "none" }}>Open dashboard →</a></>
+                    ) : "Loading…"}
                   </div>
                 )}
                 <div style={{ fontSize: 10, color: s.textFaint, marginTop: 6 }}>{api.resetInfo}</div>
@@ -322,7 +322,7 @@ export default function Cockpit() {
               <div style={{ fontSize: 11, color: s.textDim, marginBottom: 6 }}>{api.subtitle}</div>
               {api.limit && <div style={{ fontSize: "1rem", fontWeight: 700, color: s.text }}>{api.limit.toLocaleString("en-US")} <span style={{ fontSize: 10, fontWeight: 400, color: s.textDim }}>{api.note}</span></div>}
               {!api.limit && <div style={{ fontSize: 11, color: s.textMid }}>{api.note}</div>}
-              <div style={{ fontSize: 10, color: s.textFaint, marginTop: 5 }}>{api.resetInfo} Â· View dashboard â</div>
+              <div style={{ fontSize: 10, color: s.textFaint, marginTop: 5 }}>{api.resetInfo} · View dashboard →</div>
             </a>
           ))}
         </div>
@@ -341,7 +341,7 @@ export default function Cockpit() {
           ].map(([l, u]) => (
             <a key={l} href={u} target="_blank" rel="noopener noreferrer"
               style={{ padding: "7px 13px", borderRadius: 7, border: `1px solid ${s.border}`, background: s.surface, color: s.textMid, textDecoration: "none", fontSize: 12, fontWeight: 500 }}>
-              {l} â
+              {l} →
             </a>
           ))}
         </div>
@@ -401,7 +401,7 @@ export default function Cockpit() {
       </Sec>
 
       <div style={{ fontSize: 11, color: s.textFaint, textAlign: "center" as const, marginTop: 8 }}>
-        Auto-refreshes every 60s Â· {lastRef.toLocaleString()}
+        Auto-refreshes every 60s · {lastRef.toLocaleString()}
       </div>
 
       </>}
