@@ -101,7 +101,7 @@ export default function Cockpit() {
     const si = setInterval(fetchAll, 60000);
     return () => clearInterval(si);
   }, [auth, fetchAll, runHealth]);
-  useEffect(() => { if (auth) fetchUsers(); }, [auth, fetchUsers]);
+  useEffect(() => { if (auth) { fetchUsers(); const ui = setInterval(fetchUsers, 60000); return () => clearInterval(ui); } }, [auth, fetchUsers]);
 
   const login = () => { if (pw === PASS) { setAuth(true); setPwErr(false); } else setPwErr(true); };
 
@@ -357,21 +357,43 @@ export default function Cockpit() {
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead><tr>
-                {["User ID", "Credits", "Reports", "Last Active"].map(h => (
-                  <th key={h} style={{ textAlign: "left", padding: "6px 10px", color: s.textFaint, fontWeight: 700, fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase" as const, borderBottom: `1px solid ${s.border}` }}>{h}</th>
+                {["Email", "Signed up", "Credits", "Dig", "Stack", "Last idea searched", "Purchased", "Last active"].map(h => (
+                  <th key={h} style={{ textAlign: "left", padding: "6px 10px", color: s.textFaint, fontWeight: 700, fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase" as const, borderBottom: `1px solid ${s.border}`, whiteSpace: "nowrap" as const }}>{h}</th>
                 ))}
               </tr></thead>
               <tbody>
-                {users.map((u: any, i: number) => (
-                  <tr key={u.user_id || i} style={{ borderBottom: `1px solid ${s.borderLight}` }}>
-                    <td style={{ padding: "8px 10px", color: s.textMid, fontFamily: "monospace", fontSize: 11 }}>{(u.user_id||"").substring(0,26)}…</td>
-                    <td style={{ padding: "8px 10px" }}>
-                      <span style={{ background: (u.credits||0) > 0 ? s.accentBg : s.borderLight, color: (u.credits||0) > 0 ? s.accent : s.textDim, borderRadius: 4, padding: "2px 8px", fontWeight: 700, fontSize: 12 }}>{u.credits ?? 0}</span>
-                    </td>
-                    <td style={{ padding: "8px 10px", color: s.textMid }}>{u.report_count ?? u.total_reports ?? 0}</td>
-                    <td style={{ padding: "8px 10px", color: s.textDim, fontSize: 12 }}>{u.last_activity || u.updated_at ? ago(u.last_activity || u.updated_at) : "—"}</td>
-                  </tr>
-                ))}
+                {users.map((u: any, i: number) => {
+                  const latestIdea = u.recent_ideas?.[0];
+                  const creditUsed = (u.total_reports || 0) > 0;
+                  return (
+                    <tr key={u.user_id || i} style={{ borderBottom: `1px solid ${s.borderLight}` }}>
+                      <td style={{ padding: "8px 10px", color: s.text, fontSize: 12, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+                        {u.email || <span style={{ color: s.textDim, fontFamily: "monospace", fontSize: 11 }}>{(u.user_id||"").substring(0,12)}…</span>}
+                      </td>
+                      <td style={{ padding: "8px 10px", color: s.textDim, fontSize: 12, whiteSpace: "nowrap" as const }}>{u.signed_up_at ? ago(u.signed_up_at) : "—"}</td>
+                      <td style={{ padding: "8px 10px" }}>
+                        <span style={{ background: (u.credits||0) > 0 ? s.accentBg : s.borderLight, color: (u.credits||0) > 0 ? s.accent : s.textDim, borderRadius: 4, padding: "2px 8px", fontWeight: 700, fontSize: 12 }}>{u.credits ?? 0}</span>
+                        {creditUsed && <span style={{ marginLeft: 6, fontSize: 10, color: s.textFaint }}>used ✓</span>}
+                      </td>
+                      <td style={{ padding: "8px 10px", color: s.textMid, fontSize: 12 }}>{u.dig_count ?? 0}</td>
+                      <td style={{ padding: "8px 10px", color: s.textMid, fontSize: 12 }}>{u.stack_count ?? 0}</td>
+                      <td style={{ padding: "8px 10px", color: s.textMid, fontSize: 12, maxWidth: 280, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }} title={latestIdea?.idea || ""}>
+                        {latestIdea ? (
+                          <span>
+                            <span style={{ background: latestIdea.tool === "gap-analysis" ? s.accentBg : "rgba(59,125,191,0.12)", color: latestIdea.tool === "gap-analysis" ? s.accent : "#3B7DBF", borderRadius: 3, padding: "1px 6px", fontSize: 10, fontWeight: 700, marginRight: 6 }}>{latestIdea.tool === "gap-analysis" ? "DIG" : "STACK"}</span>
+                            {latestIdea.idea}
+                          </span>
+                        ) : <span style={{ color: s.textFaint }}>—</span>}
+                      </td>
+                      <td style={{ padding: "8px 10px", fontSize: 12 }}>
+                        {(u.purchase_count || 0) > 0 ? (
+                          <span style={{ background: "rgba(34,197,94,0.12)", color: "#16a34a", borderRadius: 4, padding: "2px 8px", fontWeight: 700, fontSize: 11 }}>${u.total_spent?.toFixed?.(2) ?? 0}</span>
+                        ) : <span style={{ color: s.textFaint }}>—</span>}
+                      </td>
+                      <td style={{ padding: "8px 10px", color: s.textDim, fontSize: 12, whiteSpace: "nowrap" as const }}>{u.last_activity ? ago(u.last_activity) : "—"}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
