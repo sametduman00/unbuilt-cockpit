@@ -63,15 +63,19 @@ export default function Cockpit() {
   const [usersLoading, setUsersLoading] = useState(false);
   const [lastRef, setLastRef] = useState(new Date());
 
-  const fetchAll = useCallback(async () => {
+  const fetchStats = useCallback(async () => {
     const base = process.env.NEXT_PUBLIC_UNBUILT_API ?? "https://www.unbuilt.me";
     const key  = process.env.NEXT_PUBLIC_COCKPIT_API_KEY ?? "";
     const hdrs = { "x-cockpit-key": key };
-    const [s, l] = await Promise.all([
-      fetch(`${base}/api/cockpit/stats`,  { headers: hdrs }).then(r => r.json()).catch(() => null),
-      fetch(`${base}/api/cockpit/limits`, { headers: hdrs }).then(r => r.json()).catch(() => null),
-    ]);
+    const s = await fetch(`${base}/api/cockpit/stats`, { headers: hdrs }).then(r => r.json()).catch(() => null);
     if (s) { setStats(s); setLastRef(new Date()); }
+  }, []);
+
+  const fetchLimits = useCallback(async () => {
+    const base = process.env.NEXT_PUBLIC_UNBUILT_API ?? "https://www.unbuilt.me";
+    const key  = process.env.NEXT_PUBLIC_COCKPIT_API_KEY ?? "";
+    const hdrs = { "x-cockpit-key": key };
+    const l = await fetch(`${base}/api/cockpit/limits`, { headers: hdrs }).then(r => r.json()).catch(() => null);
     if (l) setLimits(l);
   }, []);
 
@@ -97,10 +101,10 @@ export default function Cockpit() {
 
   useEffect(() => {
     if (!auth) return;
-    Promise.all([fetchAll(), runHealth()]).finally(() => setLoading(false));
-    const si = setInterval(fetchAll, 60000);
+    Promise.all([fetchStats(), fetchLimits(), runHealth()]).finally(() => setLoading(false));
+    const si = setInterval(fetchStats, 60000);
     return () => clearInterval(si);
-  }, [auth, fetchAll, runHealth]);
+  }, [auth, fetchStats, fetchLimits, runHealth]);
   useEffect(() => { if (auth) { fetchUsers(); const ui = setInterval(fetchUsers, 60000); return () => clearInterval(ui); } }, [auth, fetchUsers]);
 
   const login = () => { if (pw === PASS) { setAuth(true); setPwErr(false); } else setPwErr(true); };
@@ -137,7 +141,7 @@ export default function Cockpit() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 11, color: s.textDim }}>{lastRef.toLocaleTimeString()}</span>
-          <button onClick={fetchAll} style={{ padding: "6px 12px", borderRadius: 7, border: `1px solid ${s.border}`, background: s.surface, color: s.textMid, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>↻</button>
+          <button onClick={fetchStats} style={{ padding: "6px 12px", borderRadius: 7, border: `1px solid ${s.border}`, background: s.surface, color: s.textMid, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>↻</button>
           <button onClick={runHealth} disabled={hChecking}
             style={{ padding: "6px 16px", borderRadius: 7, border: "none",
               background: allOk === false ? s.danger : allOk === true ? s.accent : s.border,
