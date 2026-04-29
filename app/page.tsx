@@ -92,20 +92,21 @@ function lerpColor(a: string, b: string, t: number) {
 
 // ─── Sidebar nav definition ─────────────────────────────────────
 type SectionId =
-  | "home" | "live" | "funnel" | "cohorts" | "revenue"
+  | "home" | "live" | "funnel" | "cohorts" | "revenue" | "subscriptions"
   | "customers" | "trends" | "risk" | "system" | "settings";
 
 const NAV: Array<{ id: SectionId; label: string; icon: ReactNode; group?: string }> = [
-  { id: "home",      label: "Home",      icon: <NavIcon path="M3 11.5L10 5l7 6.5V17a1 1 0 0 1-1 1h-3v-5H8v5H4a1 1 0 0 1-1-1v-5.5z" /> },
-  { id: "live",      label: "Live",      icon: <NavIcon path="M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm0 2.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z" /> },
-  { id: "funnel",    label: "Funnel",    icon: <NavIcon path="M3 4h14l-5 7v5l-4 2v-7L3 4z" /> },
-  { id: "cohorts",   label: "Cohorts",   icon: <NavIcon path="M3 4h4v4H3zm5 0h4v4H8zm5 0h4v4h-4zM3 9h4v4H3zm5 0h4v4H8zM3 14h4v4H3z" /> },
-  { id: "revenue",   label: "Revenue",   icon: <NavIcon path="M10 2v16M5 6h7a3 3 0 1 1 0 6H8a3 3 0 1 0 0 6h7" /> },
-  { id: "customers", label: "Customers", icon: <NavIcon path="M10 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-6 7a6 6 0 0 1 12 0v1H4v-1z" /> },
-  { id: "trends",    label: "Trends",    icon: <NavIcon path="M3 14l4-4 3 3 7-7" /> },
-  { id: "risk",      label: "Risk",      icon: <NavIcon path="M10 2L1 18h18L10 2zm0 6v4m0 2v.01" /> },
-  { id: "system",    label: "System",    icon: <NavIcon path="M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm0 3v4l3 2" /> },
-  { id: "settings",  label: "Settings",  icon: <NavIcon path="M10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm6.5-3a6.4 6.4 0 0 0-.1-1.1l1.7-1.3-1.7-3-2 .8a6.5 6.5 0 0 0-1.9-1.1l-.3-2.1h-3.4l-.3 2.1a6.5 6.5 0 0 0-1.9 1.1l-2-.8-1.7 3 1.7 1.3a6.4 6.4 0 0 0 0 2.2L1.6 12.4l1.7 3 2-.8a6.5 6.5 0 0 0 1.9 1.1l.3 2.1h3.4l.3-2.1a6.5 6.5 0 0 0 1.9-1.1l2 .8 1.7-3-1.7-1.3c.07-.36.1-.73.1-1.1z" /> },
+  { id: "home",          label: "Home",          icon: <NavIcon path="M3 11.5L10 5l7 6.5V17a1 1 0 0 1-1 1h-3v-5H8v5H4a1 1 0 0 1-1-1v-5.5z" /> },
+  { id: "live",          label: "Live",          icon: <NavIcon path="M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm0 2.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z" /> },
+  { id: "funnel",        label: "Funnel",        icon: <NavIcon path="M3 4h14l-5 7v5l-4 2v-7L3 4z" /> },
+  { id: "cohorts",       label: "Cohorts",       icon: <NavIcon path="M3 4h4v4H3zm5 0h4v4H8zm5 0h4v4h-4zM3 9h4v4H3zm5 0h4v4H8zM3 14h4v4H3z" /> },
+  { id: "revenue",       label: "Revenue",       icon: <NavIcon path="M10 2v16M5 6h7a3 3 0 1 1 0 6H8a3 3 0 1 0 0 6h7" /> },
+  { id: "subscriptions", label: "Subscriptions", icon: <NavIcon path="M4 4h12v3H4V4zm0 5h12v3H4V9zm0 5h8v3H4v-3zm10 1l3 3-3 3v-2h-3v-2h3v-2z" /> },
+  { id: "customers",     label: "Customers",     icon: <NavIcon path="M10 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-6 7a6 6 0 0 1 12 0v1H4v-1z" /> },
+  { id: "trends",        label: "Trends",        icon: <NavIcon path="M3 14l4-4 3 3 7-7" /> },
+  { id: "risk",          label: "Risk",          icon: <NavIcon path="M10 2L1 18h18L10 2zm0 6v4m0 2v.01" /> },
+  { id: "system",        label: "System",        icon: <NavIcon path="M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm0 3v4l3 2" /> },
+  { id: "settings",      label: "Settings",      icon: <NavIcon path="M10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm6.5-3a6.4 6.4 0 0 0-.1-1.1l1.7-1.3-1.7-3-2 .8a6.5 6.5 0 0 0-1.9-1.1l-.3-2.1h-3.4l-.3 2.1a6.5 6.5 0 0 0-1.9 1.1l-2-.8-1.7 3 1.7 1.3a6.4 6.4 0 0 0 0 2.2L1.6 12.4l1.7 3 2-.8a6.5 6.5 0 0 0 1.9 1.1l.3 2.1h3.4l.3-2.1a6.5 6.5 0 0 0 1.9-1.1l2 .8 1.7-3-1.7-1.3c.07-.36.1-.73.1-1.1z" /> },
 ];
 
 function NavIcon({ path }: { path: string }) {
@@ -328,16 +329,17 @@ export default function Cockpit() {
 
   // ─── Authed app shell ────────────────────────────────────────
   const sectionLabels: Record<SectionId, { kicker: string; title: string }> = {
-    home:      { kicker: "Overview",  title: "What needs your attention" },
-    live:      { kicker: "Live",      title: "Real-time activity" },
-    funnel:    { kicker: "Funnel",    title: "Activation pipeline" },
-    cohorts:   { kicker: "Cohorts",   title: "Weekly retention" },
-    revenue:   { kicker: "Revenue",   title: "Sales analytics" },
-    customers: { kicker: "Customers", title: "All customers" },
-    trends:    { kicker: "Trends",    title: "What people are building" },
-    risk:      { kicker: "Risk",      title: "Abuse and quota burn" },
-    system:    { kicker: "System",    title: "System health" },
-    settings:  { kicker: "Settings",  title: "External dashboards" },
+    home:          { kicker: "Overview",      title: "What needs your attention" },
+    live:          { kicker: "Live",          title: "Real-time activity" },
+    funnel:        { kicker: "Funnel",        title: "Activation pipeline" },
+    cohorts:       { kicker: "Cohorts",       title: "Weekly retention" },
+    revenue:       { kicker: "Revenue",       title: "Sales analytics" },
+    subscriptions: { kicker: "Subscriptions", title: "MRR, churn risk, renewals" },
+    customers:     { kicker: "Customers",     title: "All customers" },
+    trends:        { kicker: "Trends",        title: "What people are building" },
+    risk:          { kicker: "Risk",          title: "Abuse and quota burn" },
+    system:        { kicker: "System",        title: "System health" },
+    settings:      { kicker: "Settings",      title: "External dashboards" },
   };
   const { kicker, title } = sectionLabels[section];
 
@@ -433,16 +435,17 @@ export default function Cockpit() {
             <div style={{ color: c.textDim, fontSize: 13 }}>Loading…</div>
           ) : (
             <>
-              {section === "home"      && <HomeSection stats={stats} dailyKeys={dailyKeys} dailyDig={dailyDig} dailyStack={dailyStack} dailyTotal={dailyTotal} pulseOk={pulseOk} onJump={setSection} />}
-              {section === "live"      && <LiveSection stats={stats} />}
-              {section === "funnel"    && <FunnelSection stats={stats} />}
-              {section === "cohorts"   && <CohortsSection stats={stats} />}
-              {section === "revenue"   && <RevenueSection stats={stats} revenueSeries={revenueSeries} />}
-              {section === "customers" && <CustomersSection users={users} loading={usersLoading} search={userSearch} setSearch={setUserSearch} />}
-              {section === "trends"    && <TrendsSection stats={stats} dailyDig={dailyDig} dailyStack={dailyStack} />}
-              {section === "risk"      && <RiskSection stats={stats} />}
-              {section === "system"    && <SystemSection health={health} limits={limits} stats={stats} />}
-              {section === "settings"  && <SettingsSection />}
+              {section === "home"          && <HomeSection stats={stats} dailyKeys={dailyKeys} dailyDig={dailyDig} dailyStack={dailyStack} dailyTotal={dailyTotal} pulseOk={pulseOk} onJump={setSection} />}
+              {section === "live"          && <LiveSection stats={stats} />}
+              {section === "funnel"        && <FunnelSection stats={stats} />}
+              {section === "cohorts"       && <CohortsSection stats={stats} />}
+              {section === "revenue"       && <RevenueSection stats={stats} revenueSeries={revenueSeries} />}
+              {section === "subscriptions" && <SubscriptionsSection stats={stats} users={users} />}
+              {section === "customers"     && <CustomersSection users={users} loading={usersLoading} search={userSearch} setSearch={setUserSearch} />}
+              {section === "trends"        && <TrendsSection stats={stats} dailyDig={dailyDig} dailyStack={dailyStack} />}
+              {section === "risk"          && <RiskSection stats={stats} />}
+              {section === "system"        && <SystemSection health={health} limits={limits} stats={stats} />}
+              {section === "settings"      && <SettingsSection />}
             </>
           )}
         </div>
@@ -496,16 +499,16 @@ function HomeSection({ stats, dailyKeys, dailyDig, dailyStack, dailyTotal, pulse
       {/* Top KPIs row 1 */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 12 }}>
         <KpiCard label="Revenue (lifetime)" value={$n(stats?.revenue?.total ?? 0)} sub={`${$n(stats?.revenue?.today ?? 0)} today · ${$n(stats?.revenue?.week ?? 0)} this week`} sparkColor={c.primary} accent />
+        <KpiCard label="MRR" value={$n(stats?.subscriptions?.mrrUsd ?? 0)} sub={`ARR ${$n(stats?.subscriptions?.arrUsd ?? 0)} · ${num(stats?.subscriptions?.proCount ?? 0)} Pro · ${num(stats?.subscriptions?.proPlusCount ?? 0)} Pro+`} sparkColor={c.primary} />
         <KpiCard label="Reports (7-day)" value={num(stats?.reports?.week ?? 0)} delta={stats?.reports?.deltaPct} sparkData={dailyTotal.slice(-14)} sub={`${num(stats?.reports?.total ?? 0)} all-time`} />
         <KpiCard label="Customers" value={num(stats?.users?.total ?? 0)} delta={stats?.users?.deltaPct} sub={`${num(stats?.users?.today ?? 0)} today · ${num(stats?.users?.week ?? 0)} this week`} />
-        <KpiCard label="Pro subscribers" value={num(stats?.freemium?.proSubscribers ?? 0)} sub={`${stats?.freemium?.proConversionRate ?? 0}% of all signups`} sparkColor={c.primary} />
       </div>
 
       {/* Activity row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 24 }}>
         <KpiCard label="DAU" value={num(stats?.activity?.dau ?? 0)} sub="Active in last 24h" />
         <KpiCard label="WAU" value={num(stats?.activity?.wau ?? 0)} sub="Active in last 7d" />
-        <KpiCard label="MAU" value={num(stats?.activity?.mau ?? 0)} sub="Active in last 30d" />
+        <KpiCard label="Renewals next 7d" value={num(stats?.subscriptions?.expiringSoon ?? 0)} sub="Period ends within a week" sparkColor={(stats?.subscriptions?.expiringSoon ?? 0) > 0 ? c.warn : c.primary} />
         <KpiCard
           label="Pulse feed"
           value={stats?.pulse?.ageMinutes != null ? `${stats.pulse.ageMinutes}m` : "?"}
@@ -552,12 +555,12 @@ function HomeSection({ stats, dailyKeys, dailyDig, dailyStack, dailyTotal, pulse
         <Card title="Quick jump">
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {([
-              ["live",    "Live activity",   "What's happening right now"],
-              ["funnel",  "Funnel",          "Where users drop off"],
-              ["cohorts", "Cohort retention", "Are users sticking around"],
-              ["trends",  "Trends",           "What people are building"],
-              ["risk",    "Risk",             "Abuse, quota burn, anomalies"],
-              ["revenue", "Revenue",          "Daily sales + package mix"],
+              ["live",          "Live activity",     "What's happening right now"],
+              ["funnel",        "Funnel",            "Where users drop off"],
+              ["cohorts",       "Cohort retention",  "Are users sticking around"],
+              ["subscriptions", "Subscriptions",     "MRR, renewals, churn risk"],
+              ["trends",        "Trends",            "What people are building"],
+              ["risk",          "Risk",              "Abuse, quota burn, anomalies"],
             ] as const).map(([id, label, sub]) => (
               <button key={id} onClick={() => onJump(id as SectionId)}
                 style={{ padding: "12px 14px", borderRadius: 6, border: `1px solid ${c.border}`, background: c.surfaceAlt, cursor: "pointer", textAlign: "left" as const, fontFamily: "inherit" }}
@@ -1367,6 +1370,166 @@ function SystemSection({ health, limits, stats }: { health: any; limits: any; st
           ))}
         </div>
       </Card>
+    </>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION: Subscriptions
+// ═══════════════════════════════════════════════════════════════
+//
+// Surface the recurring side of the business that the orders table
+// alone wasn't showing. Pulls from stats.subscriptions which is
+// computed server-side over user_subscriptions rows where plan='pro'.
+// Tier is derived (monthly_analyses >= 25 = Pro+) to mirror the rule
+// the navbar uses, since the DB doesn't have a separate "pro+" plan
+// value.
+//
+// Cross-references the customers list (when loaded) to show a
+// readable email instead of just a Clerk user_id.
+function SubscriptionsSection({ stats, users }: { stats: any; users: any[] }) {
+  const subs: any[] = stats?.subscriptions?.list ?? [];
+  // Build a quick user_id → email lookup so we don't show raw Clerk IDs.
+  const emailFor: Record<string, string> = useMemo(() => {
+    const m: Record<string, string> = {};
+    for (const u of users ?? []) {
+      if (u.user_id && u.email) m[u.user_id] = u.email;
+    }
+    return m;
+  }, [users]);
+
+  // Sort: soonest renewal first, with negative days (already past — i.e.
+  // failed payment but still in our DB) sorted to the top because those
+  // are the ones to investigate.
+  const sortedSubs = useMemo(() => {
+    return [...subs].sort((a, b) => {
+      const ad = a.days_to_renewal ?? Infinity;
+      const bd = b.days_to_renewal ?? Infinity;
+      return ad - bd;
+    });
+  }, [subs]);
+
+  const proPlusMrr = (stats?.subscriptions?.proPlusCount ?? 0) * 19.99;
+  const proMrr = (stats?.subscriptions?.proCount ?? 0) * 9.99;
+
+  return (
+    <>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 24 }}>
+        <KpiCard
+          label="MRR"
+          value={$n(stats?.subscriptions?.mrrUsd ?? 0)}
+          sub={`Pro: ${$n(proMrr)} · Pro+: ${$n(proPlusMrr)}`}
+          sparkColor={c.primary}
+          accent
+        />
+        <KpiCard
+          label="ARR"
+          value={$n(stats?.subscriptions?.arrUsd ?? 0)}
+          sub="Annualised run-rate"
+          sparkColor={c.primary}
+        />
+        <KpiCard
+          label="Active subscribers"
+          value={num(subs.length)}
+          sub={`${num(stats?.subscriptions?.proCount ?? 0)} Pro · ${num(stats?.subscriptions?.proPlusCount ?? 0)} Pro+`}
+        />
+        <KpiCard
+          label="Renewals next 7 days"
+          value={num(stats?.subscriptions?.expiringSoon ?? 0)}
+          sub="Will charge or churn within a week"
+          sparkColor={(stats?.subscriptions?.expiringSoon ?? 0) > 0 ? c.warn : c.primary}
+        />
+      </div>
+
+      {/* Tier split visual */}
+      {subs.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <Card title="Plan mix">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div style={{ padding: 16, borderRadius: 6, background: c.primaryBg, border: `1px solid #90D2A6` }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: c.primaryDark, textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>Pro $9.99/mo</div>
+                <div style={{ fontSize: "1.75rem", fontWeight: 700, color: c.primaryDark, marginTop: 4 }}>{num(stats?.subscriptions?.proCount ?? 0)}</div>
+                <div style={{ fontSize: 12, color: c.primaryDark, opacity: 0.85 }}>{$n(proMrr)} MRR</div>
+              </div>
+              <div style={{ padding: 16, borderRadius: 6, background: "#E8E0FA", border: `1px solid #B8A4E8` }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "#4C2D8E", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>Pro+ $19.99/mo</div>
+                <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "#4C2D8E", marginTop: 4 }}>{num(stats?.subscriptions?.proPlusCount ?? 0)}</div>
+                <div style={{ fontSize: 12, color: "#4C2D8E", opacity: 0.85 }}>{$n(proPlusMrr)} MRR</div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      <Card title={`Active subscriptions — ${subs.length}`} padding="0">
+        {subs.length === 0 ? (
+          <div style={{ padding: 32, color: c.textDim, fontSize: 13, textAlign: "center" as const }}>
+            No active subscriptions.
+            <div style={{ fontSize: 11, marginTop: 6 }}>
+              If you just bought one and don't see it here, check the Paddle webhook log — the orders table
+              insert was added recently and older subscription buys may not have a corresponding orders row.
+            </div>
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: c.surfaceAlt, borderBottom: `1px solid ${c.border}` }}>
+                  {["Customer", "Tier", "Period ends", "Renewal in", "Monthly quota", "Purchased", "MRR"].map(h => (
+                    <th key={h} style={{ padding: "10px 14px", textAlign: "left" as const, fontSize: 12, fontWeight: 500, color: c.textSec, whiteSpace: "nowrap" as const }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sortedSubs.map((s: any, i: number) => {
+                  const dr = s.days_to_renewal as number | null;
+                  // Risk pill: anything overdue or within 3 days is a watch item;
+                  // 7 days is a soft warning; everything else is healthy.
+                  let renewBg = c.surfaceAlt, renewTxt = c.textSec, renewLabel = "—";
+                  if (dr !== null) {
+                    if (dr < 0)      { renewBg = c.negativeBg; renewTxt = c.negativeText; renewLabel = `${Math.abs(dr)}d overdue`; }
+                    else if (dr <= 3){ renewBg = c.warnBg;     renewTxt = c.warnText;     renewLabel = `in ${dr}d`; }
+                    else if (dr <= 7){ renewBg = c.infoBg;     renewTxt = c.infoText;     renewLabel = `in ${dr}d`; }
+                    else             { renewBg = c.positiveBg; renewTxt = c.positiveText; renewLabel = `in ${dr}d`; }
+                  }
+                  const tierBg = s.tier === "pro+" ? "#E8E0FA" : c.primaryBg;
+                  const tierTxt = s.tier === "pro+" ? "#4C2D8E" : c.primaryDark;
+                  const email = emailFor[s.user_id];
+                  return (
+                    <tr key={s.user_id || i} style={{ borderBottom: `1px solid ${c.border}` }}>
+                      <td style={{ padding: "12px 14px", color: c.text, maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+                        {email ?? <span style={{ color: c.textDim, fontFamily: "monospace", fontSize: 12 }}>{(s.user_id || "").substring(0, 14)}…</span>}
+                      </td>
+                      <td style={{ padding: "12px 14px" }}>
+                        <span style={{ background: tierBg, color: tierTxt, padding: "2px 10px", borderRadius: 4, fontSize: 11, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>
+                          {s.tier === "pro+" ? "Pro+" : "Pro"}
+                        </span>
+                      </td>
+                      <td style={{ padding: "12px 14px", color: c.textSec, fontVariantNumeric: "tabular-nums" as const, whiteSpace: "nowrap" as const }}>
+                        {s.current_period_end ? new Date(s.current_period_end).toLocaleDateString() : "—"}
+                      </td>
+                      <td style={{ padding: "12px 14px" }}>
+                        <span style={{ background: renewBg, color: renewTxt, padding: "2px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>{renewLabel}</span>
+                      </td>
+                      <td style={{ padding: "12px 14px", textAlign: "left" as const, color: c.text, fontWeight: 500 }}>{s.monthly_analyses}</td>
+                      <td style={{ padding: "12px 14px", color: c.textSec }}>{s.purchased_analyses || 0}</td>
+                      <td style={{ padding: "12px 14px", color: c.primary, fontWeight: 600 }}>{$n(s.monthly_price_usd)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      {/* Helper note explaining the tier rule */}
+      <div style={{ marginTop: 16, padding: 14, borderRadius: 6, background: c.infoBg, border: `1px solid #A4CDEF`, fontSize: 12, color: c.infoText, lineHeight: 1.6 }}>
+        <strong>Note on tier detection:</strong> Subscriptions are stored in <code>user_subscriptions</code> with a single
+        <code> plan </code> column (<code>pro</code> or <code>free</code>). Tier is derived: <code>monthly_analyses ≥ 25</code> = Pro+, otherwise Pro.
+        This matches the rule used by <code>AppTopNav</code> on the live site. If a Pro+ purchase isn't showing up,
+        check that the Paddle <code>price_id</code> in the webhook is mapped to <code>25</code> in <code>SUBSCRIPTION_QUOTAS</code>.
+      </div>
     </>
   );
 }
